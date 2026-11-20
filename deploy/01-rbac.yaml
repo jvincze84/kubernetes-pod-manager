@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pod-manager
+  namespace: pod-manager
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pod-manager
+rules:
+  # Namespace lista
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+  # POD-ok listázása, törlése
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "delete"]
+  # POD logok
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  # Workloadok listázása + rollout restart (pod template annotáció patch)
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "patch"]
+  # Scale to 0 / Scale to 1 (csak Deployment)
+  - apiGroups: ["apps"]
+    resources: ["deployments/scale"]
+    verbs: ["patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pod-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pod-manager
+subjects:
+  - kind: ServiceAccount
+    name: pod-manager
+    namespace: pod-manager

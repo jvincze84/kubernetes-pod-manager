@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pod Manager</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- PWA. use-credentials: a manifest kérés is vigye a basic auth adatokat, különben 401 -->
+  <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+  <meta name="theme-color" content="#171e26">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+  <header>
+    <a href="#/" class="brand">☸ Pod Manager</a>
+    <nav id="crumbs"></nav>
+    <label class="autorefresh" title="Automatikus frissítés 5 másodpercenként">
+      <input type="checkbox" id="autorefresh" checked> Auto-frissítés
+    </label>
+    <button id="refresh" class="btn" title="Frissítés">⟳</button>
+  </header>
+
+  <main id="app"></main>
+
+  <!-- Log ablak -->
+  <div id="logModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-head">
+        <strong id="logTitle"></strong>
+        <button class="btn" id="logClose">✕</button>
+      </div>
+      <div class="log-controls">
+        <label>Konténer <select id="logContainer"></select></label>
+        <label>Utolsó
+          <select id="logTail">
+            <option value="100">100</option>
+            <option value="500" selected>500</option>
+            <option value="2000">2000</option>
+            <option value="10000">10000</option>
+            <option value="-1">mind</option>
+          </select> sor
+        </label>
+        <label><input type="checkbox" id="logFollow"> Követés (follow)</label>
+        <label><input type="checkbox" id="logPrevious"> Előző konténer</label>
+        <label><input type="checkbox" id="logTimestamps"> Időbélyeg</label>
+        <label><input type="checkbox" id="logWrap" checked> Sortörés</label>
+        <input type="search" id="logFilter" placeholder="Szűrés a logban…">
+        <button class="btn" id="logReload">Újratöltés</button>
+        <a class="btn" id="logDownload" href="#">Letöltés</a>
+      </div>
+      <pre id="logOutput" class="wrap"></pre>
+    </div>
+  </div>
+
+  <!-- Megerősítő ablak -->
+  <div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-box small">
+      <div class="modal-head"><strong id="confirmTitle">Megerősítés</strong></div>
+      <div class="confirm-body">
+        <p id="confirmText"></p>
+        <div id="confirmTypeWrap" class="hidden">
+          <p>A megerősítéshez írd be: <code id="confirmExpected"></code></p>
+          <input type="text" id="confirmInput" autocomplete="off">
+        </div>
+      </div>
+      <div class="confirm-actions">
+        <button class="btn" id="confirmCancel">Mégse</button>
+        <button class="btn danger" id="confirmOk">Igen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+  <script src="app.js"></script>
+</body>
+</html>

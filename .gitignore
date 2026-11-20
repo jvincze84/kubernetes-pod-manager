@@ -1,0 +1,36 @@
+# Build output
+/pod-manager
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+coverage.*
+
+# Go workspace
+go.work
+go.work.sum
+
+# Secrets / credentials – never commit these
+.env
+.env.*
+*.htpasswd
+/auth
+kubeconfig*
+*.kubeconfig
+deploy/*secret*.yaml
+!deploy/*secret*.example.yaml
+*.pem
+*.key
+*.crt
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Claude Code – personal local settings (shared settings.json is committed)
+.claude/settings.local.json

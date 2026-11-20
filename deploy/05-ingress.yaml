@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pod-manager
+  namespace: pod-manager
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # --- haproxytech/kubernetes-ingress (HAProxy Technologies) ---
+    haproxy.org/auth-type: basic-auth
+    haproxy.org/auth-secret: pod-manager-auth
+    haproxy.org/auth-realm: Pod-Manager
+    # Hosszan futó log stream (follow) miatt:
+    haproxy.org/timeout-server: "1h"
+    # --- Ha jcmoraisjr/haproxy-ingress-t használsz, helyette ezek kellenek
+    #     (és a secretben egy "auth" kulcs htpasswd formátumban):
+    # haproxy-ingress.github.io/auth-type: basic
+    # haproxy-ingress.github.io/auth-secret: pod-manager-auth
+    # haproxy-ingress.github.io/auth-realm: Pod-Manager
+    # haproxy-ingress.github.io/timeout-server: "1h"
+spec:
+  ingressClassName: haproxy
+  # tls:
+  #   - hosts: [pod-manager.example.com]
+  #     secretName: pod-manager-tls
+  rules:
+    - host: pod-manager.k8s.vincze.work
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: pod-manager
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - pod-manager.k8s.vincze.work
+      secretName: cert-https

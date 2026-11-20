@@ -1,0 +1,8 @@
+# Only go.mod, go.sum, main.go and web/ are needed for the image
+.git
+.gitignore
+.dockerignore
+.claude
+deploy
+scripts
+*.md
