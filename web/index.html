@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,10 +16,10 @@
   <header>
     <a href="#/" class="brand">☸ Pod Manager</a>
     <nav id="crumbs"></nav>
-    <label class="autorefresh" title="Automatikus frissítés 5 másodpercenként">
-      <input type="checkbox" id="autorefresh" checked> Auto-frissítés
+    <label class="autorefresh" title="Refresh automatically every 5 seconds">
+      <input type="checkbox" id="autorefresh" checked> Auto-refresh
     </label>
-    <button id="refresh" class="btn" title="Frissítés">⟳</button>
+    <button id="refresh" class="btn" title="Refresh">⟳</button>
   </header>
 
   <main id="app"></main>
@@ -32,23 +32,23 @@
         <button class="btn" id="logClose">✕</button>
       </div>
       <div class="log-controls">
-        <label>Konténer <select id="logContainer"></select></label>
-        <label>Utolsó
+        <label>Container <select id="logContainer"></select></label>
+        <label>Last
           <select id="logTail">
             <option value="100">100</option>
             <option value="500" selected>500</option>
             <option value="2000">2000</option>
             <option value="10000">10000</option>
-            <option value="-1">mind</option>
-          </select> sor
+            <option value="-1">all</option>
+          </select> lines
         </label>
-        <label><input type="checkbox" id="logFollow"> Követés (follow)</label>
-        <label><input type="checkbox" id="logPrevious"> Előző konténer</label>
-        <label><input type="checkbox" id="logTimestamps"> Időbélyeg</label>
-        <label><input type="checkbox" id="logWrap" checked> Sortörés</label>
-        <input type="search" id="logFilter" placeholder="Szűrés a logban…">
-        <button class="btn" id="logReload">Újratöltés</button>
-        <a class="btn" id="logDownload" href="#">Letöltés</a>
+        <label><input type="checkbox" id="logFollow"> Follow</label>
+        <label><input type="checkbox" id="logPrevious"> Previous container</label>
+        <label><input type="checkbox" id="logTimestamps"> Timestamps</label>
+        <label><input type="checkbox" id="logWrap" checked> Wrap lines</label>
+        <input type="search" id="logFilter" placeholder="Filter log…">
+        <button class="btn" id="logReload">Reload</button>
+        <a class="btn" id="logDownload" href="#">Download</a>
       </div>
       <pre id="logOutput" class="wrap"></pre>
     </div>
@@ -57,17 +57,17 @@
   <!-- Megerősítő ablak -->
   <div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-box small">
-      <div class="modal-head"><strong id="confirmTitle">Megerősítés</strong></div>
+      <div class="modal-head"><strong id="confirmTitle">Confirm</strong></div>
       <div class="confirm-body">
         <p id="confirmText"></p>
         <div id="confirmTypeWrap" class="hidden">
-          <p>A megerősítéshez írd be: <code id="confirmExpected"></code></p>
+          <p>Type this to confirm: <code id="confirmExpected"></code></p>
           <input type="text" id="confirmInput" autocomplete="off">
         </div>
       </div>
       <div class="confirm-actions">
-        <button class="btn" id="confirmCancel">Mégse</button>
-        <button class="btn danger" id="confirmOk">Igen</button>
+        <button class="btn" id="confirmCancel">Cancel</button>
+        <button class="btn danger" id="confirmOk">Yes</button>
       </div>
     </div>
   </div>

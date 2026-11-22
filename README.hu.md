@@ -1,6 +1,6 @@
 # Pod Manager
 
-Kis webes felület Kubernetes POD-ok kezelésére (Go + client-go, beágyazott statikus frontend).
+Kis webes felület Kubernetes POD-ok kezelésére (Go + client-go, beágyazott statikus frontend). A felület nyelve angol.
 
 *English version: [README.md](README.md)*
 
@@ -8,9 +8,9 @@ Kis webes felület Kubernetes POD-ok kezelésére (Go + client-go, beágyazott s
 
 - Namespace lista élő kereséssel (Enter → első találat megnyitása), namespace-enként Running / hibás POD szám
 - Namespace nézet
-  - **Összes POD listázása** / **Összes POD törlése** (megerősítő kérdéssel)
+  - **List all pods** / **Delete all pods** (megerősítő kérdéssel)
   - Deployment / StatefulSet / DaemonSet lista Ready-állapottal
-  - Soronként: **PODok törlése**, **Rollout restart**, Deploymentnél **Scale to 0** / **Scale to 1**
+  - Soronként: **Delete pods**, **Rollout restart**, Deploymentnél **Scale to 0** / **Scale to 1**
 - **Clean**: a namespace összes Completed (Succeeded) POD-jának törlése
 - Workload nézet: a hozzá tartozó POD-ok (label selector alapján), POD törlése, Terminating POD-nál force törlés
 - POD státusz (`kubectl get pods`-szal azonos STATUS logika), Ready, restartok, kor, node, IP, konténerállapotok

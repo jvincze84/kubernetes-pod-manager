@@ -5,7 +5,9 @@ Read this first when resuming work. User-facing docs: `README.md` (English) and 
 ## Communication
 
 - The user writes in **Hungarian**. Answer in Hungarian.
-- Code identifiers are English. Code comments are Hungarian, as is the existing style. UI text is **Hungarian**.
+- Code identifiers are English. Code comments are Hungarian, as is the existing style.
+- **UI text is English** (switched from Hungarian on 2026-11-22). Docs: English `README.md` plus Hungarian `README.hu.md`,
+  where button names are quoted in English to match the UI.
 
 ## What this is
 
@@ -119,3 +121,4 @@ manifest fetch fail with 401. There is no service worker on purpose. Installing 
 - 2026-11-12: PWA manifest and icons, mobile layout tweaks.
 - 2026-11-20: git prep (`.gitignore`), `scripts/check.sh` and `scripts/smoke-test.sh`, English
   `README.md` (the Hungarian one moved to `README.hu.md`), this file.
+- 2026-11-22: UI translated to English (`web/app.js`, `web/index.html`, `web/manifest.json`).

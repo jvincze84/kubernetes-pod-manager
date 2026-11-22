@@ -62,7 +62,7 @@ function readyBadge(ready, desired) {
 }
 
 function setCrumbs(parts) {
-  const html = ['<a href="#/">Namespace-ek</a>'];
+  const html = ['<a href="#/">Namespaces</a>'];
   for (const p of parts) {
     html.push('<span class="sep">/</span>' + (p.href ? `<a href="${esc(p.href)}">${esc(p.label)}</a>` : esc(p.label)));
   }
@@ -70,7 +70,7 @@ function setCrumbs(parts) {
 }
 
 // ---------- megerősítő ablak ----------
-function confirmDialog({ title = 'Megerősítés', text, typeToConfirm = null, okLabel = 'Igen' }) {
+function confirmDialog({ title = 'Confirm', text, typeToConfirm = null, okLabel = 'Yes' }) {
   return new Promise((resolve) => {
     const modal = $('#confirmModal'), input = $('#confirmInput'), ok = $('#confirmOk');
     $('#confirmTitle').textContent = title;
@@ -102,15 +102,15 @@ async function runAction(btn, fn) {
 
 function deleteSummary(res) {
   const failed = Object.keys(res.failed || {});
-  if (failed.length) toast(`Sikertelen törlés (${failed.length}): ${failed.join(', ')}`, 'err');
-  toast(`${res.deleted.length} POD törölve`, 'ok');
+  if (failed.length) toast(`Failed to delete (${failed.length}): ${failed.join(', ')}`, 'err');
+  toast(`${res.deleted.length} pod(s) deleted`, 'ok');
 }
 
 // ---------- POD tábla (közös) ----------
 function podTable(ns, pods, { showOwner = false, filter = '' } = {}) {
   const f = filter.toLowerCase();
   const list = f ? pods.filter((p) => p.name.toLowerCase().includes(f) || p.status.toLowerCase().includes(f) || (p.node || '').toLowerCase().includes(f)) : pods;
-  if (!list.length) return `<div class="empty">${pods.length ? 'Nincs találat' : 'Nincs POD'}</div>`;
+  if (!list.length) return `<div class="empty">${pods.length ? 'No matches' : 'No pods'}</div>`;
   const rows = list.map((p) => {
     const dots = p.containers.map((c) =>
       `<span class="cdot" style="background:${containerColor(c)}" title="${esc((c.init ? 'init: ' : '') + c.name + ' – ' + c.state + (c.restarts ? ', restart: ' + c.restarts : ''))}"></span>`).join('');
@@ -124,14 +124,14 @@ function podTable(ns, pods, { showOwner = false, filter = '' } = {}) {
       <td class="small">${esc(p.node || '-')}</td>
       <td class="small mono">${esc(p.ip || '-')}</td>
       <td class="actions">
-        <button class="btn sm" data-act="logs" data-pod="${esc(p.name)}">Logok</button>
-        ${p.status === 'Terminating' ? `<button class="btn sm warn" data-act="force-delete" data-pod="${esc(p.name)}">Force törlés</button>` : ''}
-        <button class="btn sm danger" data-act="delete-pod" data-pod="${esc(p.name)}">Törlés</button>
+        <button class="btn sm" data-act="logs" data-pod="${esc(p.name)}">Logs</button>
+        ${p.status === 'Terminating' ? `<button class="btn sm warn" data-act="force-delete" data-pod="${esc(p.name)}">Force delete</button>` : ''}
+        <button class="btn sm danger" data-act="delete-pod" data-pod="${esc(p.name)}">Delete</button>
       </td></tr>`;
   }).join('');
   return `<table><thead><tr>
-    <th>Név</th><th>Státusz</th><th>Ready</th><th>Restart</th><th>Kor</th>
-    ${showOwner ? '<th>Tulajdonos</th>' : ''}<th>Node</th><th>IP</th><th></th>
+    <th>Name</th><th>Status</th><th>Ready</th><th>Restarts</th><th>Age</th>
+    ${showOwner ? '<th>Owner</th>' : ''}<th>Node</th><th>IP</th><th></th>
   </tr></thead><tbody>${rows}</tbody></table>`;
 }
 
@@ -147,12 +147,12 @@ function bindPodActions(root, ns, getPods, reload) {
     } else if (btn.dataset.act === 'delete-pod' || btn.dataset.act === 'force-delete') {
       const force = btn.dataset.act === 'force-delete';
       confirmDialog({
-        title: force ? 'POD azonnali törlése' : 'POD törlése',
-        text: `Biztosan törlöd a(z) "${pod}" POD-ot (${ns})?` + (force ? ' (grace period: 0)' : ''),
-        okLabel: 'Törlés',
+        title: force ? 'Force delete pod' : 'Delete pod',
+        text: `Delete pod "${pod}" in namespace "${ns}"?` + (force ? ' (grace period: 0)' : ''),
+        okLabel: 'Delete',
       }).then((ok) => ok && runAction(btn, async () => {
         await api('DELETE', `namespaces/${enc(ns)}/pods/${enc(pod)}${force ? '?force=true' : ''}`);
-        toast(`${pod} törölve`, 'ok');
+        toast(`${pod} deleted`, 'ok');
         reload();
       }));
     }
@@ -166,9 +166,9 @@ function viewNamespaces() {
   setCrumbs([]);
   const saved = sessionStorage.getItem('nsFilter') || '';
   app.innerHTML = `
-    <h2>Namespace-ek</h2>
-    <div class="sub">Kezdd el gépelni a namespace nevét. Enter: az első találat megnyitása.</div>
-    <input type="search" id="nsSearch" class="search-big" placeholder="Namespace keresése…" value="${esc(saved)}" autofocus>
+    <h2>Namespaces</h2>
+    <div class="sub">Start typing a namespace name. Press Enter to open the first match.</div>
+    <input type="search" id="nsSearch" class="search-big" placeholder="Search namespaces…" value="${esc(saved)}" autofocus>
     <div id="nsList" class="ns-grid"></div>`;
   const search = $('#nsSearch'), listEl = $('#nsList');
   let all = [];
@@ -182,9 +182,9 @@ function viewNamespaces() {
         <span class="name">${esc(n.name)}</span>
         <span class="ns-meta">
           ${n.status !== 'Active' ? `<span class="badge b-yellow">${esc(n.status)}</span>` : ''}
-          <span class="podcount" title="Running / hibás POD-ok"><span class="${n.running ? 'c-green' : 'muted'}">${n.running}</span><span class="muted">/</span><span class="${n.errors ? 'c-red' : 'muted'}">${n.errors}</span></span>
+          <span class="podcount" title="Running / failing pods"><span class="${n.running ? 'c-green' : 'muted'}">${n.running}</span><span class="muted">/</span><span class="${n.errors ? 'c-red' : 'muted'}">${n.errors}</span></span>
         </span>
-      </a>`).join('') : '<div class="empty">Nincs találat</div>';
+      </a>`).join('') : '<div class="empty">No matches</div>';
     return items;
   };
   search.addEventListener('input', render);
@@ -208,17 +208,17 @@ function viewNamespace(ns, tab) {
   app.innerHTML = `
     <h2>${esc(ns)}</h2>
     <div class="toolbar">
-      <a class="btn ${tab === 'pods' ? 'primary' : ''}" href="#/ns/${enc(ns)}/pods">Összes POD listázása</a>
-      <button class="btn warn" id="clean" title="Az összes Completed (Succeeded) POD törlése">Clean <span class="count" id="cntC">–</span></button>
-      <button class="btn danger" id="delAll">Összes POD törlése</button>
+      <a class="btn ${tab === 'pods' ? 'primary' : ''}" href="#/ns/${enc(ns)}/pods">List all pods</a>
+      <button class="btn warn" id="clean" title="Delete all Completed (Succeeded) pods">Clean <span class="count" id="cntC">–</span></button>
+      <button class="btn danger" id="delAll">Delete all pods</button>
       <span class="spacer"></span>
-      <input type="search" id="filter" placeholder="Szűrés…">
+      <input type="search" id="filter" placeholder="Filter…">
     </div>
     <div class="tabs">
-      <a class="tab ${tab === 'workloads' ? 'active' : ''}" href="#/ns/${enc(ns)}">Workloadok <span class="count" id="cntW">–</span></a>
-      <a class="tab ${tab === 'pods' ? 'active' : ''}" href="#/ns/${enc(ns)}/pods">POD-ok <span class="count" id="cntP">–</span></a>
+      <a class="tab ${tab === 'workloads' ? 'active' : ''}" href="#/ns/${enc(ns)}">Workloads <span class="count" id="cntW">–</span></a>
+      <a class="tab ${tab === 'pods' ? 'active' : ''}" href="#/ns/${enc(ns)}/pods">Pods <span class="count" id="cntP">–</span></a>
     </div>
-    <div id="content"><div class="empty">Betöltés…</div></div>`;
+    <div id="content"><div class="empty">Loading…</div></div>`;
 
   const content = $('#content'), filter = $('#filter');
   let workloads = [], pods = [];
@@ -231,9 +231,9 @@ function viewNamespace(ns, tab) {
     if (tab === 'pods') { content.innerHTML = podTable(ns, pods, { showOwner: true, filter: f }); return; }
 
     const list = f ? workloads.filter((w) => w.name.toLowerCase().includes(f) || w.kind.includes(f)) : workloads;
-    if (!list.length) { content.innerHTML = `<div class="empty">${workloads.length ? 'Nincs találat' : 'Nincs Deployment / StatefulSet / DaemonSet'}</div>`; return; }
+    if (!list.length) { content.innerHTML = `<div class="empty">${workloads.length ? 'No matches' : 'No Deployments / StatefulSets / DaemonSets'}</div>`; return; }
     content.innerHTML = `<table><thead><tr>
-        <th>Típus</th><th>Név</th><th>Ready</th><th>Up-to-date</th><th>Image</th><th>Kor</th><th></th>
+        <th>Kind</th><th>Name</th><th>Ready</th><th>Up-to-date</th><th>Image</th><th>Age</th><th></th>
       </tr></thead><tbody>${list.map((w) => {
         const href = `#/ns/${enc(ns)}/${w.kind}/${enc(w.name)}`;
         return `<tr class="clickable" data-href="${esc(href)}">
@@ -244,7 +244,7 @@ function viewNamespace(ns, tab) {
           <td class="small muted mono">${w.images.map(esc).join('<br>')}</td>
           <td>${age(w.created)}</td>
           <td class="actions">
-            <button class="btn sm danger" data-wact="delete-pods" data-kind="${w.kind}" data-name="${esc(w.name)}">PODok törlése</button>
+            <button class="btn sm danger" data-wact="delete-pods" data-kind="${w.kind}" data-name="${esc(w.name)}">Delete pods</button>
             <button class="btn sm warn" data-wact="restart" data-kind="${w.kind}" data-name="${esc(w.name)}">Rollout restart</button>
             ${w.kind === 'deployment' ? scaleButtons(w, 'sm') : ''}
           </td></tr>`;
@@ -272,10 +272,10 @@ function viewNamespace(ns, tab) {
   $('#clean').addEventListener('click', async (e) => {
     const btn = e.currentTarget;
     const n = pods.filter((p) => p.phase === 'Succeeded').length;
-    if (!n) { toast('Nincs Completed POD ebben a namespace-ben'); return; }
+    if (!n) { toast('There are no Completed pods in this namespace'); return; }
     const ok = await confirmDialog({
-      title: 'Completed POD-ok törlése',
-      text: `A(z) "${ns}" namespace ${n} db Completed (Succeeded) POD-ja törlődik.`,
+      title: 'Delete Completed pods',
+      text: `${n} Completed (Succeeded) pod(s) in namespace "${ns}" will be deleted.`,
       okLabel: 'Clean',
     });
     if (ok) runAction(btn, async () => {
@@ -287,9 +287,9 @@ function viewNamespace(ns, tab) {
   $('#delAll').addEventListener('click', async (e) => {
     const btn = e.currentTarget;
     const ok = await confirmDialog({
-      title: 'Összes POD törlése',
-      text: `A(z) "${ns}" namespace ÖSSZES POD-ja törlődik (${pods.length || '?'} db). A controllerek által kezelt POD-ok újra létrejönnek, a többi elveszik.`,
-      okLabel: 'Összes törlése',
+      title: 'Delete all pods',
+      text: `ALL pods in namespace "${ns}" will be deleted (${pods.length || '?'}). Pods managed by a controller will be recreated; all others are gone for good.`,
+      okLabel: 'Delete all',
     });
     if (ok) runAction(btn, async () => {
       deleteSummary(await api('DELETE', `namespaces/${enc(ns)}/pods?confirm=${enc(ns)}`));
@@ -301,7 +301,7 @@ function viewNamespace(ns, tab) {
 }
 
 function scaleButtons(w, size = '') {
-  return [0, 1].map((n) => `<button class="btn ${size}" data-wact="scale" data-replicas="${n}" data-kind="${w.kind}" data-name="${esc(w.name)}"${w.desired === n ? ' disabled title="Már ennyi a replika"' : ''}>Scale to ${n}</button>`).join(' ');
+  return [0, 1].map((n) => `<button class="btn ${size}" data-wact="scale" data-replicas="${n}" data-kind="${w.kind}" data-name="${esc(w.name)}"${w.desired === n ? ' disabled title="Already at this replica count"' : ''}>Scale to ${n}</button>`).join(' ');
 }
 
 async function workloadAction(btn, ns, kind, name, reload) {
@@ -309,30 +309,30 @@ async function workloadAction(btn, ns, kind, name, reload) {
     const n = btn.dataset.replicas;
     const ok = await confirmDialog({
       title: `Scale to ${n}`,
-      text: `Deployment "${name}" replikaszáma ${n} lesz.` + (n === '0' ? ' Minden POD leáll!' : ''),
+      text: `Deployment "${name}" will be scaled to ${n} replica(s).` + (n === '0' ? ' All of its pods will stop!' : ''),
       okLabel: `Scale to ${n}`,
     });
     if (ok) runAction(btn, async () => {
       await api('POST', `namespaces/${enc(ns)}/workloads/deployment/${enc(name)}/scale?replicas=${n}`);
-      toast(`${name}: replikaszám → ${n}`, 'ok');
+      toast(`${name}: scaled to ${n}`, 'ok');
       await reload();
     });
   } else if (btn.dataset.wact === 'restart') {
     const ok = await confirmDialog({
       title: 'Rollout restart',
-      text: `${KIND_LABEL[kind]} "${name}" rollout restart-ja (a POD-ok a rollout stratégia szerint, sorban újraindulnak).`,
+      text: `Rollout restart of ${KIND_LABEL[kind]} "${name}". Its pods are restarted one by one, following the rollout strategy.`,
       okLabel: 'Restart',
     });
     if (ok) runAction(btn, async () => {
       await api('POST', `namespaces/${enc(ns)}/workloads/${kind}/${enc(name)}/restart`);
-      toast(`${name}: rollout restart elindítva`, 'ok');
+      toast(`${name}: rollout restart started`, 'ok');
       await reload();
     });
   } else {
     const ok = await confirmDialog({
-      title: 'PODok törlése',
-      text: `${KIND_LABEL[kind]} "${name}" összes POD-ja egyszerre törlődik (a controller újra létrehozza őket). Ez rövid kiesést okozhat!`,
-      okLabel: 'PODok törlése',
+      title: 'Delete pods',
+      text: `All pods of ${KIND_LABEL[kind]} "${name}" will be deleted at once (the controller recreates them). This can cause a short outage!`,
+      okLabel: 'Delete pods',
     });
     if (ok) runAction(btn, async () => {
       deleteSummary(await api('DELETE', `namespaces/${enc(ns)}/workloads/${kind}/${enc(name)}/pods`));
@@ -346,15 +346,15 @@ function viewWorkload(ns, kind, name) {
   app.innerHTML = `
     <h2><span class="badge b-blue kind">${esc(KIND_LABEL[kind] || kind)}</span> ${esc(name)}</h2>
     <div class="toolbar">
-      <button class="btn danger" data-wact="delete-pods">PODok törlése</button>
+      <button class="btn danger" data-wact="delete-pods">Delete pods</button>
       <button class="btn warn" data-wact="restart">Rollout restart</button>
       <span id="scaleBtns"></span>
       <span class="spacer"></span>
-      <input type="search" id="filter" placeholder="POD szűrése…">
+      <input type="search" id="filter" placeholder="Filter pods…">
     </div>
     <dl class="info-grid" id="info"></dl>
-    <h3>POD-ok</h3>
-    <div id="content"><div class="empty">Betöltés…</div></div>`;
+    <h3>Pods</h3>
+    <div id="content"><div class="empty">Loading…</div></div>`;
 
   const content = $('#content'), filter = $('#filter');
   let pods = [];
@@ -368,7 +368,7 @@ function viewWorkload(ns, kind, name) {
       <dt>Ready</dt><dd>${readyBadge(w.ready, w.desired)} <span class="muted small">up-to-date: ${w.updated}</span></dd>
       <dt>Selector</dt><dd class="mono small">${esc(w.selector)}</dd>
       <dt>Image</dt><dd class="mono small">${w.images.map(esc).join('<br>')}</dd>
-      <dt>Kor</dt><dd>${age(w.created)}</dd>`;
+      <dt>Age</dt><dd>${age(w.created)}</dd>`;
     render();
   };
   filter.addEventListener('input', render);
@@ -391,7 +391,7 @@ function openLogs(ns, pod, containers) {
   const sel = $('#logContainer');
   const list = containers.length ? containers : [{ name: '', init: false, state: '' }];
   sel.innerHTML = list.map((c) =>
-    `<option value="${esc(c.name)}">${esc((c.init ? 'init: ' : '') + (c.name || '(alapértelmezett)'))}${c.state ? ' – ' + esc(c.state) : ''}</option>`).join('');
+    `<option value="${esc(c.name)}">${esc((c.init ? 'init: ' : '') + (c.name || '(default)'))}${c.state ? ' – ' + esc(c.state) : ''}</option>`).join('');
   // Alapértelmezés: első nem-init konténer
   const firstMain = list.find((c) => !c.init);
   if (firstMain) sel.value = firstMain.name;
@@ -437,7 +437,7 @@ async function loadLogs() {
   log.abort = ctrl;
   log.text = '';
   const out = $('#logOutput');
-  out.textContent = 'Betöltés…';
+  out.textContent = 'Loading…';
   const follow = $('#logFollow').checked;
   $('#logDownload').href = 'api/' + logQuery({ download: 'true' });
 
@@ -455,13 +455,13 @@ async function loadLogs() {
       scheduleRender();
     }
     if (follow && log.abort === ctrl) {
-      log.text += '\n--- stream lezárult ---\n';
+      log.text += '\n--- stream closed ---\n';
     }
-    if (!log.text) log.text = '(üres log)';
+    if (!log.text) log.text = '(empty log)';
     renderLog();
     if (!follow) out.scrollTop = out.scrollHeight;
   } catch (e) {
-    if (e.name !== 'AbortError') out.textContent = 'Hiba: ' + e.message;
+    if (e.name !== 'AbortError') out.textContent = 'Error: ' + e.message;
   }
 }
 

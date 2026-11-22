@@ -1,7 +1,7 @@
 {
   "name": "Pod Manager",
   "short_name": "Pod Manager",
-  "description": "Kubernetes POD-ok kezelése",
+  "description": "Manage Kubernetes pods",
   "id": "./",
   "start_url": "./",
   "scope": "./",
