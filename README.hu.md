@@ -6,7 +6,7 @@ Kis webes felület Kubernetes POD-ok kezelésére (Go + client-go, beágyazott s
 
 ## Funkciók
 
-- Namespace lista élő kereséssel (Enter → első találat megnyitása), namespace-enként Running / Pending / hibás POD szám (a Pending szám pirosra vált és `!` jelet kap, ha egy pod 5 percnél régebb óta nem indult el)
+- Namespace lista élő kereséssel (Enter → első találat megnyitása), namespace-enként Running / Pending / hibás POD szám (a Pending szám pirosra vált és `!` jelet kap, ha egy pod 5 percnél régebb óta nem indult el), a keresőmező alatt magyarázat a számokhoz, és szűrő azokra a namespace-ekre, ahol van nem egészséges pod (nem Running, vagy nem minden container ready; a Completed podokat figyelmen kívül hagyja)
 - Namespace nézet
   - **List all pods** / **Delete all pods** (megerősítő kérdéssel)
   - Deployment / StatefulSet / DaemonSet lista Ready-állapottal

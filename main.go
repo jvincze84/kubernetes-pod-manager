@@ -172,10 +172,23 @@ type nsInfo struct {
 	Pending int       `json:"pending"` // még nem indult el (Pending, ContainerCreating, Init:N/M ...)
 	Stuck   int       `json:"stuck"`   // a Pending podok közül a stuckAfter-nél régebbiek
 	Errors  int       `json:"errors"`
+	// Unhealthy: nem Running pod (Completed/Succeeded nélkül), vagy Running, de nem minden container ready.
+	Unhealthy int `json:"unhealthy"`
 }
 
 // stuckAfter: ennyi idő után számít egy még el nem indult pod "beragadtnak".
 const stuckAfter = 5 * time.Minute
+
+// allContainersReady: minden (nem init) container ready-e.
+func allContainersReady(p *corev1.Pod) bool {
+	ready := 0
+	for _, cs := range p.Status.ContainerStatuses {
+		if cs.Ready {
+			ready++
+		}
+	}
+	return ready == len(p.Spec.Containers)
+}
 
 // isPendingStatus: a podStatus() eredménye alapján a pod még nem indult el, de nem is hibás.
 // A Completed/Succeeded és a Terminating szándékosan nem számít bele.
@@ -205,7 +218,7 @@ func (s *server) listNamespaces(w http.ResponseWriter, r *http.Request) {
 		writeK8sErr(w, err)
 		return
 	}
-	type counts struct{ running, pending, stuck, errors int }
+	type counts struct{ running, pending, stuck, errors, unhealthy int }
 	now := time.Now()
 	byNS := map[string]*counts{}
 	for i := range pods.Items {
@@ -215,7 +228,11 @@ func (s *server) listNamespaces(w http.ResponseWriter, r *http.Request) {
 			c = &counts{}
 			byNS[p.Namespace] = c
 		}
-		switch st := podStatus(p); {
+		st := podStatus(p)
+		if st != "Completed" && st != "Succeeded" && (st != "Running" || !allContainersReady(p)) {
+			c.unhealthy++
+		}
+		switch {
 		case st == "Running":
 			c.running++
 		case errorStatus.MatchString(st):
@@ -232,6 +249,7 @@ func (s *server) listNamespaces(w http.ResponseWriter, r *http.Request) {
 		ni := nsInfo{Name: n.Name, Status: string(n.Status.Phase), Created: n.CreationTimestamp.Time}
 		if c := byNS[n.Name]; c != nil {
 			ni.Running, ni.Pending, ni.Stuck, ni.Errors = c.running, c.pending, c.stuck, c.errors
+			ni.Unhealthy = c.unhealthy
 		}
 		out = append(out, ni)
 	}

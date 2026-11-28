@@ -105,3 +105,5 @@ td.actions .btn { margin-left: 4px; }
   header { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
   #crumbs { order: 3; flex-basis: 100%; }
 }
+.ns-opt { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; cursor: pointer; }
+.ns-legend { margin: 6px 0 4px; font-size: 12px; }

@@ -70,7 +70,8 @@ pattern conflicts panic at startup, and the smoke test catches that.
 - `errorStatus` (regex in Go) decides which pods count as "failing" for the namespace counters. It **must
   stay in sync** with `statusClass()` in `web/app.js`, which uses the same regex for red badges.
 - Namespace counters: running / pending / failing. `isPendingStatus()` = anything not Running, Completed,
-  Succeeded, Terminating or matching `errorStatus`. Pending older than `stuckAfter` (5 min) is flagged red.
+  Succeeded, Terminating or matching `errorStatus`. Pending older than `stuckAfter` (5 min) is flagged red. `unhealthy` = not Running (excluding Completed/Succeeded) or Running with unready
+  containers; the namespace list checkbox filters on it (state kept in sessionStorage).
 - The namespace list makes a single cluster-wide pod List with `ResourceVersion: "0"`, served from the API
   server's cache, to get running/failing counts.
 - `resolveWorkload()` gets workload info plus its pods via the label selector. It is used by the detail,
@@ -125,3 +126,4 @@ manifest fetch fail with 401. There is no service worker on purpose. Installing 
   `README.md` (the Hungarian one moved to `README.hu.md`), this file.
 - 2026-11-22: UI translated to English (`web/app.js`, `web/index.html`, `web/manifest.json`).
 - 2026-11-28: namespace counters now running / pending / failing, with stuck-pending (>5 min) highlight.
+- 2026-11-28: namespace list legend under the search box and an "unhealthy pods only" filter.

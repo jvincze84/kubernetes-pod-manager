@@ -169,14 +169,18 @@ function viewNamespaces() {
     <h2>Namespaces</h2>
     <div class="sub">Start typing a namespace name. Press Enter to open the first match.</div>
     <input type="search" id="nsSearch" class="search-big" placeholder="Search namespaces…" value="${esc(saved)}" autofocus>
+    <label class="ns-opt"><input type="checkbox" id="nsUnhealthy"${sessionStorage.getItem('nsUnhealthy') === '1' ? ' checked' : ''}> Only namespaces with unhealthy pods <span class="muted">(a pod is not Running, or not all of its containers are ready)</span></label>
+    <div class="ns-legend muted">Counters: <span class="c-green">running</span> / <span class="c-yellow">pending</span> (not started yet; <span class="c-red">red&nbsp;!</span> = pending for over 5 min) / <span class="c-red">failing</span> (error states, e.g. CrashLoopBackOff). Completed pods are not counted.</div>
     <div id="nsList" class="ns-grid"></div>`;
-  const search = $('#nsSearch'), listEl = $('#nsList');
+  const search = $('#nsSearch'), listEl = $('#nsList'), unh = $('#nsUnhealthy');
   let all = [];
 
   const render = () => {
     const f = search.value.trim().toLowerCase();
     sessionStorage.setItem('nsFilter', search.value);
-    const items = f ? all.filter((n) => n.name.toLowerCase().includes(f)) : all;
+    sessionStorage.setItem('nsUnhealthy', unh.checked ? '1' : '0');
+    let items = f ? all.filter((n) => n.name.toLowerCase().includes(f)) : all;
+    if (unh.checked) items = items.filter((n) => n.unhealthy > 0);
     listEl.innerHTML = items.length ? items.map((n, i) => `
       <a class="ns-card${i === 0 && f ? ' sel' : ''}" href="#/ns/${enc(n.name)}">
         <span class="name">${esc(n.name)}</span>
@@ -188,6 +192,7 @@ function viewNamespaces() {
     return items;
   };
   search.addEventListener('input', render);
+  unh.addEventListener('change', render);
   search.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       const items = render();

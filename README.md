@@ -8,7 +8,7 @@ frontend embedded into a single binary. The image is about 44 MB, distroless, an
 ## Features
 
 - **Namespace list** with live search (Enter opens the first match), and per-namespace pod counts
-  (`running / pending / failing`; the pending number turns red with a `!` when a pod has been pending for over 5 minutes)
+  (`running / pending / failing`; the pending number turns red with a `!` when a pod has been pending for over 5 minutes), a legend below the search box, and a filter for namespaces with unhealthy pods (a pod that is not Running, or Running with not all containers ready; Completed pods are ignored)
 - **Namespace view**
   - **List all pods** / **Delete all pods** (asks for confirmation first)
   - **Clean**: deletes every Completed (`Succeeded`) pod in the namespace
