@@ -169,7 +169,22 @@ type nsInfo struct {
 	Status  string    `json:"status"`
 	Created time.Time `json:"created"`
 	Running int       `json:"running"`
+	Pending int       `json:"pending"` // még nem indult el (Pending, ContainerCreating, Init:N/M ...)
+	Stuck   int       `json:"stuck"`   // a Pending podok közül a stuckAfter-nél régebbiek
 	Errors  int       `json:"errors"`
+}
+
+// stuckAfter: ennyi idő után számít egy még el nem indult pod "beragadtnak".
+const stuckAfter = 5 * time.Minute
+
+// isPendingStatus: a podStatus() eredménye alapján a pod még nem indult el, de nem is hibás.
+// A Completed/Succeeded és a Terminating szándékosan nem számít bele.
+func isPendingStatus(st string) bool {
+	switch st {
+	case "Running", "Completed", "Succeeded", "Terminating":
+		return false
+	}
+	return !errorStatus.MatchString(st)
 }
 
 // errorStatus: a podStatus() által adott státuszok közül ezek számítanak hibásnak
@@ -190,7 +205,8 @@ func (s *server) listNamespaces(w http.ResponseWriter, r *http.Request) {
 		writeK8sErr(w, err)
 		return
 	}
-	type counts struct{ running, errors int }
+	type counts struct{ running, pending, stuck, errors int }
+	now := time.Now()
 	byNS := map[string]*counts{}
 	for i := range pods.Items {
 		p := &pods.Items[i]
@@ -204,13 +220,18 @@ func (s *server) listNamespaces(w http.ResponseWriter, r *http.Request) {
 			c.running++
 		case errorStatus.MatchString(st):
 			c.errors++
+		case isPendingStatus(st):
+			c.pending++
+			if now.Sub(p.CreationTimestamp.Time) > stuckAfter {
+				c.stuck++
+			}
 		}
 	}
 	out := make([]nsInfo, 0, len(list.Items))
 	for _, n := range list.Items {
 		ni := nsInfo{Name: n.Name, Status: string(n.Status.Phase), Created: n.CreationTimestamp.Time}
 		if c := byNS[n.Name]; c != nil {
-			ni.Running, ni.Errors = c.running, c.errors
+			ni.Running, ni.Pending, ni.Stuck, ni.Errors = c.running, c.pending, c.stuck, c.errors
 		}
 		out = append(out, ni)
 	}

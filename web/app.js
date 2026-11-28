@@ -182,7 +182,7 @@ function viewNamespaces() {
         <span class="name">${esc(n.name)}</span>
         <span class="ns-meta">
           ${n.status !== 'Active' ? `<span class="badge b-yellow">${esc(n.status)}</span>` : ''}
-          <span class="podcount" title="Running / failing pods"><span class="${n.running ? 'c-green' : 'muted'}">${n.running}</span><span class="muted">/</span><span class="${n.errors ? 'c-red' : 'muted'}">${n.errors}</span></span>
+          <span class="podcount" title="Running / pending / failing pods${n.stuck ? ` (${n.stuck} pending for over 5 min)` : ''}"><span class="${n.running ? 'c-green' : 'muted'}">${n.running}</span><span class="muted">/</span><span class="${n.stuck ? 'c-red' : n.pending ? 'c-yellow' : 'muted'}">${n.pending}${n.stuck ? '!' : ''}</span><span class="muted">/</span><span class="${n.errors ? 'c-red' : 'muted'}">${n.errors}</span></span>
         </span>
       </a>`).join('') : '<div class="empty">No matches</div>';
     return items;

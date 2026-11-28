@@ -96,6 +96,7 @@ td.actions .btn { margin-left: 4px; }
 .podcount { font-weight: 600; font-variant-numeric: tabular-nums; }
 .podcount .muted { margin: 0 2px; }
 .c-green { color: var(--green); }
+.c-yellow { color: var(--yellow); }
 .c-red { color: var(--red); }
 /* Mobil: széles táblák vízszintesen görgethetők */
 #content { overflow-x: auto; }
